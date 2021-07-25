@@ -2,7 +2,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <cstdint>
-#include <algorithm>
+
+void unload(void* instance);
 
 const wchar_t* title = L"this took me 5 minutes to make";
 bool attached = false;
@@ -16,6 +17,9 @@ void main_thread(void* instance) {
 	attached = AllocConsole() && SetConsoleTitleW(title);
 	freopen_s(reinterpret_cast<FILE**>stdin, "CONIN$", "r", stdin);
 	freopen_s(reinterpret_cast<FILE**>stdout, "CONOUT$", "w", stdout);
+
+	if (!attached)
+		unload(instance);
 
 	// find "textinputframework.dll"
 	uint32_t textinput_mod = (uint32_t)GetModuleHandleA("textinputframework.dll");
@@ -34,6 +38,10 @@ void main_thread(void* instance) {
 		Sleep(100);
 	}
 
+	unload(instance);
+}
+
+void unload(void* instance) {
 	auto console_window = GetConsoleWindow();
 	FreeConsole();
 	PostMessageA(console_window, WM_QUIT, 0, 0);
